@@ -1,0 +1,77 @@
+#coding:utf-8
+from urllib.request import urlopen
+######
+#爬虫v0.1 利用urlib 和 字符串内建函数
+######
+def getHtml(url):
+    # 获取网页内容
+    page = urlopen(url)
+    html = page.read()
+    html = html.decode('utf-8')
+    return html
+
+def GetContent(html):
+    # 内容分割的标签
+    str = '<article class="article-content">'
+    content = html.partition(str)[2]
+    str1 = '<div class="article-social">'
+    content = content.partition(str1)[0]
+    return content # 得到网页的内容
+    
+def title(content,beg = 0):
+    # 匹配title
+    # 思路是利用str.index()和序列的切片
+    try:
+        title_list = []
+        while True:   
+            num1 = content.index('】',beg)
+            num2 = content.index('</p>',num1)
+            title_list.append(content[num1+3:num2])
+            beg = num2
+        
+    except ValueError:
+         return title_list
+         
+def get_img(content,beg = 0):
+    # 匹配图片的url
+    # 思路是利用str.index()和序列的切片
+    try:
+        img_list = []
+        while True:   
+            src1 = content.index('http',beg)
+            src2 = content.index('/></p>',src1)
+            img_list.append(content[src1:src2])
+            beg = src2
+        
+    except ValueError:
+         return img_list
+
+def many_img(data,beg = 0):
+    #用于匹配多图中的url
+    try:
+        many_img_str = b''
+        while True:
+            src1 = data.index('http',beg)
+            src2 = data.index(' /><br /> <img src=',src1)
+            many_img_str += data[src1:src2]+'|' # 多个图片的url用"|"隔开
+            beg = src2
+    except ValueError:
+        return many_img_str              
+         
+def data_out(title, img):
+    #写入文本
+    with open(r".\data.txt", "a+") as fo:
+        fo.write('\n')
+        cnt=min(len(title), len(img))
+        for size in range(0, cnt):
+            # 判断img[size]中存在的是不是一个url
+            if len(img[size]) > 70: 
+                img[size] = many_img(img[size])#调用many_img()方法
+            fo.write(title[size]+'$'+img[size]+'\n')       
+   
+                   
+content = GetContent(getHtml("http://bohaishibei.com/post/10475/"))
+title = title(content)
+img = get_img(content)
+data_out(title, img)
+# 实现了爬的单个页面的title和img的url并存入文本
