@@ -1,3 +1,7 @@
+#!/usr/bin/python3
+# 文件名：enumregkeys.py
+# function search keyword in register keys and entries from a register file and save matched keys to a new file.
+# the input file must be utf-8 encoding
 
 from collections import defaultdict
 import sys
